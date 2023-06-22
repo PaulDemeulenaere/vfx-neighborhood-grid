@@ -32,3 +32,5 @@
 *.orig
 *.orig.meta
 .npmrc
+Packages/packages-lock.json
+UserSettings/Layouts
