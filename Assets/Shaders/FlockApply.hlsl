@@ -29,7 +29,7 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
 
                 accumulatedAlignement += data.vel;
                 accumulatedPosition += data.pos;
-                if (sqrLength < avoidThreshold && sqrLength > 0.01f)
+                if (sqrLength < avoidThreshold && sqrLength > 0.001f)
                 {
                     accumulatedAvoidPosition += position - data.pos;
                     accumulatedAvoidPositionCount++;
@@ -78,7 +78,6 @@ void Flock_Simulate(inout VFXAttributes attributes, in float3 centerBox, in floa
         velocity = lerp(velocity, velocity + separation, saturate(deltaTime * flockSeparation));
 
         attributes.velocity = float3(velocity.x, 0.0f, velocity.y);
-        attributes.velocity = normalize(attributes.velocity) * 0.5f;
 	}
 }
 
