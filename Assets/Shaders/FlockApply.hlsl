@@ -12,7 +12,7 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
 
     float avoidThreshold = max(sizeBox.x, sizeBox.z)/GRID_DIM;
     avoidThreshold *= avoidThreshold;
-    avoidThreshold = 0.1f; //TODOPAUL: Clean up compute
+    avoidThreshold = 0.3f; //TODOPAUL: Clean up compute
 
     uint2 currentGridPosition = GetGridPosition(position, centerBox.xz, sizeBox.xz);
     for (int i = -1; i <= 1; ++i)
@@ -31,7 +31,7 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
                 accumulatedPosition += data.pos;
                 if (sqrLength < avoidThreshold && sqrLength > 0.01f)
                 {
-                    accumulatedAvoidPosition += data.pos;
+                    accumulatedAvoidPosition += position - data.pos;
                     accumulatedAvoidPositionCount++;
                 }
                 globalAvgCount++;
@@ -53,7 +53,7 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
     if (accumulatedAvoidPositionCount > 0)
     {
         accumulatedAvoidPosition /= (float)accumulatedAvoidPositionCount;
-        separation = position - accumulatedAvoidPosition;
+        separation = accumulatedAvoidPosition;
     }
 
     return globalAvgCount > 0;
@@ -69,7 +69,7 @@ void Flock_Simulate(inout VFXAttributes attributes, in float3 centerBox, in floa
     if (alive && valid)
     {
         float flockCohesion = 6.0f;
-        float flockAlignement = 4.0f;
+        float flockAlignement = 3.0f;
         float flockSeparation = 15.0f;
 
         float2 velocity = attributes.velocity.xz;
