@@ -9,7 +9,10 @@ void Update_Grid(inout VFXAttributes attributes, in float3 centerBox, in float3 
         CellData data;
         data.pos = attributes.position.xz;
         data.vel = attributes.velocity.xz;
-        bool success = TryInsertInCell(currentGridPosition, data);
-        attributes.age -= success ? 0.0f : 0.1f;
+        if (!TryInsertInCell(currentGridPosition, data))
+        {
+            //If a entity stays too long in a full cell, kill it.
+            attributes.age -= 0.1f;
+        }
     }
 }

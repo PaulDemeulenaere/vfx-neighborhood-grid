@@ -12,7 +12,7 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
 
     float avoidThreshold = max(sizeBox.x, sizeBox.z)/GRID_DIM;
     avoidThreshold *= avoidThreshold;
-    avoidThreshold = 0.3f; //TODOPAUL: Clean up compute
+    avoidThreshold = 0.25f; //TODOPAUL: Clean up compute
 
     uint2 currentGridPosition = GetGridPosition(position, centerBox.xz, sizeBox.xz);
     for (int i = -1; i <= 1; ++i)
@@ -31,6 +31,7 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
                 accumulatedPosition += data.pos;
                 if (sqrLength < avoidThreshold && sqrLength > 0.001f)
                 {
+                    //TODOPAUL: damp this avoidance based on curve
                     accumulatedAvoidPosition += position - data.pos;
                     accumulatedAvoidPositionCount++;
                 }
@@ -61,23 +62,22 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
 
 void Flock_Simulate(inout VFXAttributes attributes, in float3 centerBox, in float3 sizeBox, in float deltaTime)
 {
-    bool alive = attributes.alive;
-    float2 cohesion, separation, alignement;
-    bool valid = GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesion, separation, alignement);
-
-    //WIP Some workaround to avoid multiple curly brace (see UUM-40706)
-    if (alive && valid)
+	if (attributes.alive)
     {
-        float flockCohesion = 6.0f;
-        float flockAlignement = 3.0f;
-        float flockSeparation = 15.0f;
+        float2 cohesion, separation, alignement;
+        if (GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesion, separation, alignement))
+        {
+            float flockCohesion = 7.0f;
+            float flockAlignement = 4.0f;
+            float flockSeparation = 20.0f;
 
-        float2 velocity = attributes.velocity.xz;
-        velocity = lerp(velocity, cohesion, saturate(deltaTime * flockCohesion));
-        velocity = lerp(velocity, alignement, saturate(deltaTime * flockAlignement));
-        velocity = lerp(velocity, velocity + separation, saturate(deltaTime * flockSeparation));
+            float2 velocity = attributes.velocity.xz;
+            velocity = lerp(velocity, velocity + separation, saturate(deltaTime * flockSeparation));
+            velocity = lerp(velocity, alignement, saturate(deltaTime * flockAlignement));
+            velocity = lerp(velocity, cohesion, saturate(deltaTime * flockCohesion));
 
-        attributes.velocity = float3(velocity.x, 0.0f, velocity.y);
+            attributes.velocity = float3(velocity.x, 0.0f, velocity.y);
+        }
 	}
 }
 
