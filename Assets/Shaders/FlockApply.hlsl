@@ -1,10 +1,10 @@
 #define READ_GRID 1
 #include "GridCommon.hlsl"
 
-bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox, out float2 cohesion, out float2 separation, out float2 alignement)
+bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox, out float2 cohesion, out float2 separation, out float2 alignment)
 {
-    float2 accumulatedAlignement;
-    float2 accumulatedPosition;
+    float2 accumulatedAlignement = 0.0f;
+    float2 accumulatedPosition = 0.0f;
     float2 accumulatedAvoidPosition = 0.0f;
 
     uint globalAvgCount = 0u;
@@ -24,38 +24,32 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
             for (uint instance = 0; instance < instanceCount; ++instance)
             {
                 CellData data = GetCellData((uint2)gridPosition, instance);
-                float2 positionVector = position - data.pos;
-                float sqrLength = dot(positionVector, positionVector);
 
-                accumulatedAlignement += data.vel;
-                accumulatedPosition += data.pos;
-                if (sqrLength < avoidThreshold && sqrLength > 0.001f)
+                if (position.x != data.pos.x && position.y != data.pos.y) //float comparison is legit here, it skip the current instance
                 {
-                    //TODOPAUL: damp this avoidance based on curve
-                    accumulatedAvoidPosition += position - data.pos;
-                    accumulatedAvoidPositionCount++;
+                    float2 positionVector = position - data.pos;
+                    float sqrLength = dot(positionVector, positionVector);
+
+                    accumulatedAlignement += data.vel;
+                    accumulatedPosition += data.pos;
+
+                    float dampingAvoid = exp(-sqrLength * 50.0f);
+                    accumulatedAvoidPosition += normalize(position - data.pos) * dampingAvoid;
+
+                    globalAvgCount++;
                 }
-                globalAvgCount++;
             }
         }
     }
 
-    cohesion = separation = alignement = (float2)0.0f;
+    cohesion = separation = alignment = (float2)0.0f;
 
-    if (globalAvgCount > 0)
-    {
-        accumulatedAlignement /= (float)globalAvgCount;
-        accumulatedPosition /= (float)globalAvgCount;
+    accumulatedAlignement /= (float)globalAvgCount;
+    accumulatedPosition /= (float)globalAvgCount;
 
-        cohesion = accumulatedPosition - position;
-        alignement = accumulatedAlignement;
-    }
-
-    if (accumulatedAvoidPositionCount > 0)
-    {
-        accumulatedAvoidPosition /= (float)accumulatedAvoidPositionCount;
-        separation = accumulatedAvoidPosition;
-    }
+    cohesion = accumulatedPosition - position;
+    alignment = accumulatedAlignement;
+	separation = accumulatedAvoidPosition;
 
     return globalAvgCount > 0;
 }
@@ -64,16 +58,16 @@ void Flock_Simulate(inout VFXAttributes attributes, in float3 centerBox, in floa
 {
 	if (attributes.alive)
     {
-        float2 cohesion, separation, alignement;
-        if (GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesion, separation, alignement))
+        float2 cohesion, separation, alignment;
+        if (GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesion, separation, alignment))
         {
-            float flockCohesion = 7.0f;
-            float flockAlignement = 4.0f;
-            float flockSeparation = 20.0f;
+            float flockCohesion = 6.0f;
+            float flockAlignment = 4.0f;
+            float flockSeparation = 14.0f;
 
             float2 velocity = attributes.velocity.xz;
-            velocity = lerp(velocity, velocity + separation, saturate(deltaTime * flockSeparation));
-            velocity = lerp(velocity, alignement, saturate(deltaTime * flockAlignement));
+            velocity = lerp(velocity, separation, saturate(deltaTime * flockSeparation));
+            velocity = lerp(velocity, alignment, saturate(deltaTime * flockAlignment));
             velocity = lerp(velocity, cohesion, saturate(deltaTime * flockCohesion));
 
             attributes.velocity = float3(velocity.x, 0.0f, velocity.y);

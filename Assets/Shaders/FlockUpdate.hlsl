@@ -12,7 +12,11 @@ void Update_Grid(inout VFXAttributes attributes, in float3 centerBox, in float3 
         if (!TryInsertInCell(currentGridPosition, data))
         {
             //If a entity stays too long in a full cell, kill it.
-            attributes.age -= 0.1f;
+            //attributes.lifetime -= 0.1f;
+        }
+        else
+        {
+            attributes.lifetime = saturate(attributes.lifetime + 0.1f);
         }
     }
 }
