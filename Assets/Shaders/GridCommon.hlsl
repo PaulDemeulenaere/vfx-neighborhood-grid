@@ -28,36 +28,36 @@ uint GetGridLinearIndex(uint2 uPos)
 }
 
 #if UPDATE_GRID
-RWStructuredBuffer<uint> Global_NaiveGrid_Count;
-RWStructuredBuffer<CellData> Global_NaiveGrid_Data;
+RWStructuredBuffer<uint> Global_Grid_Count;
+RWStructuredBuffer<CellData> Global_Grid_Data;
 
 bool TryInsertInCell(uint2 uPos, CellData data)
 {
     uint cellId = GetGridLinearIndex(uPos);
-    uint index;
-    InterlockedAdd(Global_NaiveGrid_Count[cellId], 1, index);
-    if (index < CELL_CAPACITY)
+    uint index = 0;
+    InterlockedAdd(Global_Grid_Count[cellId], 1, index);
+    bool canAdd = index < CELL_CAPACITY;
+    if (canAdd)
     {
-        Global_NaiveGrid_Data[cellId * CELL_CAPACITY + index] = data;
-        return true;
+        Global_Grid_Data[cellId * CELL_CAPACITY + index] = data;
     }
-    return false;
+    return canAdd;
 }
 
 #elif READ_GRID
-StructuredBuffer<uint> Global_NaiveGrid_Count;
-StructuredBuffer<CellData> Global_NaiveGrid_Data;
+StructuredBuffer<uint> Global_Grid_Count;
+StructuredBuffer<CellData> Global_Grid_Data;
 
 uint GetCellCount(uint2 uPos)
 {
     uint cellId = GetGridLinearIndex(uPos);
-    return min(Global_NaiveGrid_Count[cellId], CELL_CAPACITY);
+    return min(Global_Grid_Count[cellId], CELL_CAPACITY);
 }
 
 CellData GetCellData(uint2 uPos, uint index)
 {
     uint cellId = GetGridLinearIndex(uPos);
-    return Global_NaiveGrid_Data[cellId * CELL_CAPACITY + index];
+    return Global_Grid_Data[cellId * CELL_CAPACITY + index];
 }
 
 #endif

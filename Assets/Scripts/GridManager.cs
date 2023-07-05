@@ -10,8 +10,8 @@ public class GridManager : MonoBehaviour
     private static readonly int kCellCount = kGridDimension * kGridDimension * kCellCapacity;
     private static readonly int kClearDispatchSize = kGridDimension * kGridDimension / 64;
 
-    static readonly int kGlobal_NaiveGrid_CountID = Shader.PropertyToID("Global_NaiveGrid_Count");
-    static readonly int kGlobal_NaiveGrid_DataID = Shader.PropertyToID("Global_NaiveGrid_Data");
+    static readonly int kGlobal_Grid_CountID = Shader.PropertyToID("Global_Grid_Count");
+    static readonly int kGlobal_Grid_DataID = Shader.PropertyToID("Global_Grid_Data");
 
     GraphicsBuffer m_NaiveGrid_Count;
     GraphicsBuffer m_NaiveGrid_Data;
@@ -24,8 +24,8 @@ public class GridManager : MonoBehaviour
         m_NaiveGrid_Count = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(uint)));
         m_NaiveGrid_Data = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(float)) * 4);
         
-        Shader.SetGlobalBuffer(kGlobal_NaiveGrid_CountID, m_NaiveGrid_Count);
-        Shader.SetGlobalBuffer(kGlobal_NaiveGrid_DataID, m_NaiveGrid_Data);
+        Shader.SetGlobalBuffer(kGlobal_Grid_CountID, m_NaiveGrid_Count);
+        Shader.SetGlobalBuffer(kGlobal_Grid_DataID, m_NaiveGrid_Data);
     }
 
     void Update()
@@ -35,8 +35,8 @@ public class GridManager : MonoBehaviour
 
     void OnDisable()
     {
-        Shader.SetGlobalBuffer(kGlobal_NaiveGrid_CountID, (GraphicsBuffer)null);
-        Shader.SetGlobalBuffer(kGlobal_NaiveGrid_DataID, (GraphicsBuffer)null);
+        Shader.SetGlobalBuffer(kGlobal_Grid_CountID, (GraphicsBuffer)null);
+        Shader.SetGlobalBuffer(kGlobal_Grid_DataID, (GraphicsBuffer)null);
 
         m_NaiveGrid_Count?.Release();
         m_NaiveGrid_Data?.Release();

@@ -8,6 +8,6 @@ void CSGlobal_GridClear(uint3 id : SV_DispatchThreadID)
 {
     if (id.x < GRID_DIM * GRID_DIM)
     {
-        Global_NaiveGrid_Count[id.x] = 0u;
+        Global_Grid_Count[id.x] = 0u;
     }
 }
