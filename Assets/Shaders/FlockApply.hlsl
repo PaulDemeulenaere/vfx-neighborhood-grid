@@ -8,11 +8,6 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
     float2 accumulatedAvoidPosition = 0.0f;
 
     uint globalAvgCount = 0u;
-    uint accumulatedAvoidPositionCount = 0u;
-
-    float avoidThreshold = max(sizeBox.x, sizeBox.z)/GRID_DIM;
-    avoidThreshold *= avoidThreshold;
-    avoidThreshold = 0.25f; //TODOPAUL: Clean up compute
 
     uint2 currentGridPosition = GetGridPosition(position, centerBox.xz, sizeBox.xz);
     for (int i = -1; i <= 1; ++i)
@@ -25,7 +20,7 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
             {
                 CellData data = GetCellData((uint2)gridPosition, instance);
 
-                if (position.x != data.pos.x && position.y != data.pos.y) //float comparison is legit here, it skip the current instance
+                if (position.x != data.pos.x && position.y != data.pos.y) //float comparison is legit here, it skips the current instance
                 {
                     float2 positionVector = position - data.pos;
                     float sqrLength = dot(positionVector, positionVector);

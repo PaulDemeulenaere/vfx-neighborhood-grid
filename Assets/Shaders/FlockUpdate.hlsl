@@ -3,19 +3,19 @@
 
 void Update_Grid(inout VFXAttributes attributes, in float3 centerBox, in float3 sizeBox)
 {
-    uint2 currentGridPosition = GetGridPosition(attributes.position.xz, centerBox.xz, sizeBox.xz);
     if (attributes.alive)
     {
         CellData data = (CellData)0;
         data.pos = attributes.position.xz;
         data.vel = attributes.velocity.xz;
-        if (TryInsertInCell(currentGridPosition, data))
+        uint2 gridPosition = GetGridPosition(attributes.position.xz, centerBox.xz, sizeBox.xz);
+        if (TryInsertInCell(gridPosition, data))
         {
             attributes.lifetime = saturate(attributes.lifetime + 0.1f);
         }
         else
         {
-            //If a entity stays too long in a full cell, kill it.
+            //If an entity stays too long in a full cell, kill it.
             attributes.lifetime -= 0.1f;
         }
     }
