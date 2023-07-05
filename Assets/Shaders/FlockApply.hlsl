@@ -15,10 +15,10 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
         for (int j = -1; j <= 1; ++j)
         {
             int2 gridPosition = (int2)currentGridPosition + int2(i, j);
-            uint instanceCount = GetCellCount((uint2)gridPosition);
+            uint instanceCount = GetCellCount(gridPosition);
             for (uint instance = 0; instance < instanceCount; ++instance)
             {
-                CellData data = GetCellData((uint2)gridPosition, instance);
+                CellData data = GetCellData(gridPosition, instance);
 
                 if (position.x != data.pos.x && position.y != data.pos.y) //float comparison is legit here, it skips the current instance
                 {
