@@ -54,21 +54,17 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
     return globalAvgCount > 0;
 }
 
-void Flock_Simulate(inout VFXAttributes attributes, in float3 centerBox, in float3 sizeBox, in float deltaTime)
+void Flock_Simulate(inout VFXAttributes attributes, float3 centerBox, float3 sizeBox, float cohesion, float alignment, float separation, float deltaTime)
 {
 	if (attributes.alive)
     {
-        float2 cohesion, separation, alignment;
-        if (GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesion, separation, alignment))
+        float2 cohesionVector, separationVector, alignmentVector;
+        if (GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesionVector, separationVector, alignmentVector))
         {
-            float flockCohesion = 6.0f;
-            float flockAlignment = 4.0f;
-            float flockSeparation = 14.0f;
-
             float2 velocity = attributes.velocity.xz;
-            velocity = lerp(velocity, separation, saturate(deltaTime * flockSeparation));
-            velocity = lerp(velocity, alignment, saturate(deltaTime * flockAlignment));
-            velocity = lerp(velocity, cohesion, saturate(deltaTime * flockCohesion));
+            velocity = lerp(velocity, separationVector, saturate(deltaTime * separation));
+            velocity = lerp(velocity, alignmentVector, saturate(deltaTime * alignment));
+            velocity = lerp(velocity, cohesionVector, saturate(deltaTime * cohesion));
 
             attributes.velocity = float3(velocity.x, 0.0f, velocity.y);
         }
