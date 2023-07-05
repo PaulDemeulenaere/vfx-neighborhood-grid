@@ -28,7 +28,8 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
                     accumulatedAlignement += data.vel;
                     accumulatedPosition += data.pos;
 
-                    float dampingAvoid = exp(-sqrLength * 50.0f);
+                    const float dampingScale = 40.0f;
+                    float dampingAvoid = exp(-sqrLength * dampingScale);
                     accumulatedAvoidPosition += normalize(position - data.pos) * dampingAvoid;
 
                     globalAvgCount++;
