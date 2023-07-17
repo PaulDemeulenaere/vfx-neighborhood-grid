@@ -2,43 +2,47 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-[ExecuteInEditMode]
-public class GridManager : MonoBehaviour
+namespace Flock.Sample
 {
-    private static readonly int kGridDimension = 64;
-    private static readonly int kCellCapacity = 8;
-    private static readonly int kCellCount = kGridDimension * kGridDimension * kCellCapacity;
-    private static readonly int kClearDispatchSize = kGridDimension * kGridDimension / 64;
-
-    static readonly int kGlobal_Grid_CountID = Shader.PropertyToID("Global_Grid_Count");
-    static readonly int kGlobal_Grid_DataID = Shader.PropertyToID("Global_Grid_Data");
-
-    GraphicsBuffer m_NaiveGrid_Count;
-    GraphicsBuffer m_NaiveGrid_Data;
-
-    [SerializeField]
-    ComputeShader m_GridClear;
-
-    void OnEnable()
+    [ExecuteInEditMode]
+    public class GridManager : MonoBehaviour
     {
-        m_NaiveGrid_Count = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(uint)));
-        m_NaiveGrid_Data = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(float)) * 4);
-        
-        Shader.SetGlobalBuffer(kGlobal_Grid_CountID, m_NaiveGrid_Count);
-        Shader.SetGlobalBuffer(kGlobal_Grid_DataID, m_NaiveGrid_Data);
-    }
+        private static readonly int kGridDimension = 64;
+        private static readonly int kCellCapacity = 8;
+        private static readonly int kCellCount = kGridDimension * kGridDimension * kCellCapacity;
+        private static readonly int kClearDispatchSize = kGridDimension * kGridDimension / 64;
 
-    void Update()
-    {
-        m_GridClear?.Dispatch(0, kClearDispatchSize, 1, 1);
-    }
+        static readonly int kGlobal_Grid_CountID = Shader.PropertyToID("Global_Grid_Count");
+        static readonly int kGlobal_Grid_DataID = Shader.PropertyToID("Global_Grid_Data");
 
-    void OnDisable()
-    {
-        Shader.SetGlobalBuffer(kGlobal_Grid_CountID, (GraphicsBuffer)null);
-        Shader.SetGlobalBuffer(kGlobal_Grid_DataID, (GraphicsBuffer)null);
+        GraphicsBuffer m_NaiveGrid_Count;
+        GraphicsBuffer m_NaiveGrid_Data;
 
-        m_NaiveGrid_Count?.Release();
-        m_NaiveGrid_Data?.Release();
+        [SerializeField]
+        ComputeShader m_GridClear;
+
+        void OnEnable()
+        {
+            m_NaiveGrid_Count = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(uint)));
+            m_NaiveGrid_Data = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(float)) * 4);
+
+            Shader.SetGlobalBuffer(kGlobal_Grid_CountID, m_NaiveGrid_Count);
+            Shader.SetGlobalBuffer(kGlobal_Grid_DataID, m_NaiveGrid_Data);
+        }
+
+        void Update()
+        {
+            //This clear dispatch will be called before any VFX.Update
+            m_GridClear?.Dispatch(0, kClearDispatchSize, 1, 1);
+        }
+
+        void OnDisable()
+        {
+            Shader.SetGlobalBuffer(kGlobal_Grid_CountID, (GraphicsBuffer)null);
+            Shader.SetGlobalBuffer(kGlobal_Grid_DataID, (GraphicsBuffer)null);
+
+            m_NaiveGrid_Count?.Release();
+            m_NaiveGrid_Data?.Release();
+        }
     }
 }
