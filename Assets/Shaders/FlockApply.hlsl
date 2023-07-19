@@ -45,14 +45,14 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
 
     cohesion = accumulatedPosition - position;
     alignment = accumulatedAlignement;
-	separation = accumulatedAvoidPosition;
+    separation = accumulatedAvoidPosition;
 
     return globalAvgCount > 0;
 }
 
 void Flock_Simulate(inout VFXAttributes attributes, float3 centerBox, float3 sizeBox, float cohesion, float alignment, float separation, float deltaTime)
 {
-	if (attributes.alive)
+    if (attributes.alive)
     {
         float2 cohesionVector, separationVector, alignmentVector;
         if (GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesionVector, separationVector, alignmentVector))
@@ -64,6 +64,6 @@ void Flock_Simulate(inout VFXAttributes attributes, float3 centerBox, float3 siz
 
             attributes.velocity = float3(velocity.x, 0.0f, velocity.y);
         }
-	}
+    }
 }
 
