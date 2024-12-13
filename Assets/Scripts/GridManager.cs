@@ -1,10 +1,19 @@
 using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.VFX;
 
 namespace Flock.Sample
 {
+    [VFXType(VFXTypeAttribute.Usage.GraphicsBuffer)]
+    struct CellData
+    {
+        public Vector2 pos;
+        public Vector2 vel;
+    }
+
     [ExecuteInEditMode]
+    [RequireComponent(typeof(VisualEffect))]
     public class GridManager : MonoBehaviour
     {
         private static readonly int kGridDimension = 64;
@@ -12,11 +21,13 @@ namespace Flock.Sample
         private static readonly int kCellCount = kGridDimension * kGridDimension * kCellCapacity;
         private static readonly int kClearDispatchSize = kGridDimension * kGridDimension / 64;
 
-        static readonly int kGlobal_Grid_CountID = Shader.PropertyToID("Global_Grid_Count");
-        static readonly int kGlobal_Grid_DataID = Shader.PropertyToID("Global_Grid_Data");
+        static readonly int kGridCountID = Shader.PropertyToID("GridCount");
+        static readonly int kGridDataID = Shader.PropertyToID("GridData");
 
         GraphicsBuffer m_NaiveGrid_Count;
         GraphicsBuffer m_NaiveGrid_Data;
+
+        VisualEffect m_VisualEffect;
 
         [SerializeField]
         ComputeShader m_GridClear;
@@ -24,22 +35,24 @@ namespace Flock.Sample
         void OnEnable()
         {
             m_NaiveGrid_Count = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(uint)));
-            m_NaiveGrid_Data = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(float)) * 4);
+            m_NaiveGrid_Data = new GraphicsBuffer(GraphicsBuffer.Target.Structured, kCellCount, Marshal.SizeOf(typeof(CellData)));
 
-            Shader.SetGlobalBuffer(kGlobal_Grid_CountID, m_NaiveGrid_Count);
-            Shader.SetGlobalBuffer(kGlobal_Grid_DataID, m_NaiveGrid_Data);
+            m_VisualEffect = GetComponent<VisualEffect>();
+            m_VisualEffect.SetGraphicsBuffer(kGridCountID, m_NaiveGrid_Count);
+            m_VisualEffect.SetGraphicsBuffer(kGridDataID, m_NaiveGrid_Data);
         }
 
         void Update()
         {
             //This clear dispatch will be called before any VFX.Update
+            m_GridClear?.SetBuffer(0, kGridCountID, m_NaiveGrid_Count);
             m_GridClear?.Dispatch(0, kClearDispatchSize, 1, 1);
         }
 
         void OnDisable()
         {
-            Shader.SetGlobalBuffer(kGlobal_Grid_CountID, (GraphicsBuffer)null);
-            Shader.SetGlobalBuffer(kGlobal_Grid_DataID, (GraphicsBuffer)null);
+            m_VisualEffect.SetGraphicsBuffer(kGridCountID, null);
+            m_VisualEffect.SetGraphicsBuffer(kGridDataID, null);
 
             m_NaiveGrid_Count?.Release();
             m_NaiveGrid_Data?.Release();

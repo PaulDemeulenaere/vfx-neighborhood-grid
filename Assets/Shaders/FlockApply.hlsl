@@ -1,7 +1,7 @@
 #define READ_GRID 1
 #include "GridCommon.hlsl"
 
-bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox, out float2 cohesion, out float2 separation, out float2 alignment)
+bool GetNeighborhoodInfluence(StructuredBuffer<CellData> gridData, StructuredBuffer<uint> gridCount, float2 position, float3 centerBox, float3 sizeBox, out float2 cohesion, out float2 separation, out float2 alignment)
 {
     float2 accumulatedAlignement = 0.0f;
     float2 accumulatedPosition = 0.0f;
@@ -15,10 +15,10 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
         for (int j = -1; j <= 1; ++j)
         {
             int2 gridPosition = (int2)currentGridPosition + int2(i, j);
-            uint instanceCount = GetCellCount(gridPosition);
+            uint instanceCount = GetCellCount(gridCount, gridPosition);
             for (uint instance = 0; instance < instanceCount; ++instance)
             {
-                CellData data = GetCellData(gridPosition, instance);
+                CellData data = GetCellData(gridData, gridPosition, instance);
 
                 if (position.x != data.pos.x && position.y != data.pos.y) //float comparison is legit here, it skips the current instance
                 {
@@ -50,12 +50,12 @@ bool GetNeighborhoodInfluence(float2 position, float3 centerBox, float3 sizeBox,
     return globalAvgCount > 0;
 }
 
-void Flock_Simulate(inout VFXAttributes attributes, float3 centerBox, float3 sizeBox, float cohesion, float alignment, float separation, float deltaTime)
+void Flock_Simulate(inout VFXAttributes attributes, StructuredBuffer<CellData> gridData, StructuredBuffer<uint> gridCount, float3 centerBox, float3 sizeBox, float cohesion, float alignment, float separation, float deltaTime)
 {
     if (attributes.alive)
     {
         float2 cohesionVector, separationVector, alignmentVector;
-        if (GetNeighborhoodInfluence(attributes.position.xz, centerBox, sizeBox, cohesionVector, separationVector, alignmentVector))
+        if (GetNeighborhoodInfluence(gridData, gridCount, attributes.position.xz, centerBox, sizeBox, cohesionVector, separationVector, alignmentVector))
         {
             float2 velocity = attributes.velocity.xz;
             velocity = lerp(velocity, separationVector, saturate(deltaTime * separation));

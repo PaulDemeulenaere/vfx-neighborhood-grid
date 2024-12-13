@@ -1,7 +1,6 @@
-#define UPDATE_GRID 1
 #include "GridCommon.hlsl"
 
-void Update_Grid(inout VFXAttributes attributes, in float3 centerBox, in float3 sizeBox)
+void Update_Grid(inout VFXAttributes attributes, RWStructuredBuffer<CellData> gridData, RWStructuredBuffer<uint> gridCount, float3 centerBox, float3 sizeBox)
 {
     if (attributes.alive)
     {
@@ -9,7 +8,7 @@ void Update_Grid(inout VFXAttributes attributes, in float3 centerBox, in float3 
         data.pos = attributes.position.xz;
         data.vel = attributes.velocity.xz;
         uint2 gridPosition = GetGridPosition(attributes.position.xz, centerBox.xz, sizeBox.xz);
-        if (TryInsertInCell(gridPosition, data))
+        if (TryInsertInCell(gridData, gridCount, gridPosition, data))
         {
             attributes.age = saturate(attributes.age - 0.1f);
         }

@@ -1,13 +1,15 @@
 #pragma kernel CSGlobal_GridClear
 
-#define UPDATE_GRID 1
+#define MISSING_CELL_DATA_DEFINITION 1
 #include "GridCommon.hlsl"
+
+RWStructuredBuffer<uint> GridCount;
 
 [numthreads(64,1,1)]
 void CSGlobal_GridClear(uint3 id : SV_DispatchThreadID)
 {
     if (id.x < GRID_DIM * GRID_DIM)
     {
-        Global_Grid_Count[id.x] = 0u;
+        GridCount[id.x] = 0u;
     }
 }
