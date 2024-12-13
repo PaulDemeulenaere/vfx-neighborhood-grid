@@ -1,4 +1,3 @@
-#define READ_GRID 1
 #include "GridCommon.hlsl"
 
 bool GetNeighborhoodInfluence(StructuredBuffer<CellData> gridData, StructuredBuffer<uint> gridCount, float2 position, float3 centerBox, float3 sizeBox, out float2 cohesion, out float2 separation, out float2 alignment)
